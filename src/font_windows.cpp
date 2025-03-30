@@ -7,6 +7,9 @@
 #include <dwrite_3.h>
 #include <wrl/client.h>
 
+#include <chrono>
+#include <iostream>
+
 #define CHK_HR(x, msg)                   \
     if (auto result = x; result != S_OK) \
         throw std::runtime_error(msg);
@@ -85,6 +88,19 @@ static std::filesystem::path get_font_path(IDWriteFontFile *pFontFile) {
     return filePath;
 }
 
+static fontstyle trans_style(DWRITE_FONT_STYLE win_style) {
+    switch (win_style) {
+    case DWRITE_FONT_STYLE_NORMAL:
+        return fontstyle::normal;
+    case DWRITE_FONT_STYLE_ITALIC:
+        return fontstyle::italic;
+    case DWRITE_FONT_STYLE_OBLIQUE:
+        return fontstyle::oblique;
+    default:
+        return fontstyle::normal;
+    }
+}
+
 std::vector<fontfamily> enumerate_font_win32_dwrite() {
     ComPtr<IDWriteFactory2> factory;
     ComPtr<IDWriteFontCollection> font_collection;
@@ -131,21 +147,12 @@ std::vector<fontfamily> enumerate_font_win32_dwrite() {
             family->GetFont(j, &pFont);
 
             DWRITE_FONT_STYLE win_style = pFont->GetStyle();
-            fontlist::fontstyle style;
-            switch (win_style) {
-            case DWRITE_FONT_STYLE_NORMAL:
-                style = fontstyle::normal;
-                break;
-            case DWRITE_FONT_STYLE_ITALIC:
-                style = fontstyle::italic;
-                break;
-            case DWRITE_FONT_STYLE_OBLIQUE:
-                style = fontstyle::oblique;
-                break;
-            }
-
             DWRITE_FONT_WEIGHT weight = pFont->GetWeight();
             DWRITE_FONT_STRETCH stretch = pFont->GetStretch();
+            
+            auto &font = fontfamily.fonts[j];
+            font.style = trans_style(win_style);
+            font.weight = weight;
 
             ComPtr<IDWriteFontFace> pFontFace;
             CHK_HR(pFont->CreateFontFace(&pFontFace),
@@ -157,14 +164,10 @@ std::vector<fontfamily> enumerate_font_win32_dwrite() {
             std::vector<IDWriteFontFile *> fontFiles(fileCount);
             pFontFace->GetFiles(&fileCount, fontFiles.data());
 
-            auto &font = fontfamily.fonts[j];
-            font.style = style;
-            font.weight = weight;
-            font.stretch = stretch;
-
-            for (UINT32 k = 0; k < fileCount; ++k) {
-                font.file = get_font_path(fontFiles[k]);
-            }
+            font.file = get_font_path(fontFiles[0]);
+            // for (UINT32 k = 0; k < fileCount; ++k) {
+            //     font.file = get_font_path(fontFiles[k]);
+            // }
         }
     }
 
