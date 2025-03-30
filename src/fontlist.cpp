@@ -7,6 +7,9 @@
 #ifdef __linux__
 #include "font_linux.hpp"
 #endif
+#ifdef __APPLE__
+#include "font_macos.hpp"
+#endif
 
 namespace fontlist {
 
@@ -16,6 +19,9 @@ std::vector<fontfamily> enumerate_font() {
 #endif
 #ifdef __linux__
     return enumerate_font_linux_fontconfig();
+#endif
+#ifdef __APPLE__
+    return enumerate_font_macos_coretext();
 #endif
     throw std::runtime_error("fontlist: platform not supported");
 }
