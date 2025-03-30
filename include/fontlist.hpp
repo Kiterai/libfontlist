@@ -29,7 +29,6 @@ inline std::string to_string(fontstyle style) {
 struct font {
     fontstyle style;
     int weight;
-    std::optional<int> stretch;
     std::filesystem::path file;
 };
 
