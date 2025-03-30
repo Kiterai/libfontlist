@@ -8,6 +8,10 @@
 
 namespace fontlist {
 
+static int trans_weight(float weight) {
+    return 400 + 250 * weight;
+}
+
 static std::string to_string(CFStringRef str) {
     char buf[256];
     if (!CFStringGetCString(str, buf, sizeof(buf), kCFStringEncodingUTF8))
@@ -58,7 +62,7 @@ std::vector<fontfamily> enumerate_font_macos_coretext() {
         CFNumberRef weight = (CFNumberRef)CFDictionaryGetValue(dict, kCTFontWeightTrait);
         float weightNum;
         CFNumberGetValue(weight, kCFNumberFloatType, &weightNum);
-        fontDat.weight = 400; // TODO
+        fontDat.weight = trans_weight(weightNum);
         CFRelease(weight);
 
         CFNumberRef symbolic = (CFNumberRef)CFDictionaryGetValue(dict, kCTFontSymbolicTrait);
