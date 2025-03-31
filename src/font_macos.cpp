@@ -9,7 +9,11 @@
 namespace fontlist {
 
 static int trans_weight(float weight) {
-    return 400 + 250 * weight;
+    // my subjective mapping
+    if (weight < 0)
+        return 400 + 250 * weight;
+    else
+        return 400 + weight / 0.0014;
 }
 
 static std::string to_string(CFStringRef str) {
